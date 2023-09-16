@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+
+from backend.routers import blogs
 from .routers import home_route, openai_route, file_handler_route
 import uvicorn
 from fastapi import HTTPException, Request
@@ -12,6 +14,7 @@ app = FastAPI()
 app.include_router(home_route.router)
 app.include_router(openai_route.router)
 app.include_router(file_handler_route.router)
+app.include_router(blogs.router)
 
 app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
 # Create an instance of Jinja2Templates for template rendering

@@ -8,7 +8,8 @@ from config import settings
 from PyPDF2 import PdfFileReader, PdfReader
 
 router = APIRouter()
-openai.api_key = settings.OPENAI_API_KEY
+openai.api_key = settings.open_api_key
+
 
 @router.post("/files/")
 async def create_file(file: Annotated[Union[bytes, None], File()] = None):
@@ -16,7 +17,7 @@ async def create_file(file: Annotated[Union[bytes, None], File()] = None):
         return {"message": "No file sent"}
     else:
         return {"file_size": len(file)}
-    
+
 
 @router.post("/uploadfile/")
 async def create_upload_file(file: UploadFile = None):
@@ -25,7 +26,8 @@ async def create_upload_file(file: UploadFile = None):
     else:
         data = json.loads(file.file.read())
         return {"filename": file.filename, "content": file.file.read()}
-    
+
+
 # @router.post("/compress-pdf/")
 # async def lossless_pdf_compression(file:UploadFile = None):
 #     """ Return lossless Compression of PDF file """
@@ -46,23 +48,18 @@ async def create_upload_file(file: UploadFile = None):
 #         raise HTTPException(status_code=500, detail=str(e))
 
 
+# # Save the uploaded file locally
+# with open(file.filename, "wb") as pdf_file:
+#     pdf_file.write(file.file.read())
 
-
-
-
-
-    # # Save the uploaded file locally
-    # with open(file.filename, "wb") as pdf_file:
-    #     pdf_file.write(file.file.read())
-
-    # Use PyPDF2 to read the PDF
-    # with open(file.filename, "rb") as pdf_file:
-    #     pdf_reader = PdfReader(pdf_file)
-    #     num_pages = pdf_reader.numPages
-    #     print(f"########### num_pages: {num_pages}")
-    # pdf_reader = PdfReader(file.file.read(),bytes)
-    # num_pages = pdf_reader.numPages
-    # print(f"########### num_pages: {num_pages}")
-    # # pdf_reader = PdfReader(file.filename)
-    # # num_pages = pdf_reader.numPages
-    # return {"filename": file.filename}
+# Use PyPDF2 to read the PDF
+# with open(file.filename, "rb") as pdf_file:
+#     pdf_reader = PdfReader(pdf_file)
+#     num_pages = pdf_reader.numPages
+#     print(f"########### num_pages: {num_pages}")
+# pdf_reader = PdfReader(file.file.read(),bytes)
+# num_pages = pdf_reader.numPages
+# print(f"########### num_pages: {num_pages}")
+# # pdf_reader = PdfReader(file.filename)
+# # num_pages = pdf_reader.numPages
+# return {"filename": file.filename}

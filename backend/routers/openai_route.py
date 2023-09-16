@@ -3,7 +3,7 @@ import openai
 from config import settings
 
 router = APIRouter()
-openai.api_key = settings.OPENAI_API_KEY
+openai.api_key = settings.open_api_key
 
 
 @router.post("/generate-text")
