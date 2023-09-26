@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %} Blogs {% endblock %}
+
+{% block content %}
+    <h3>
+        Blogs...
+    </h3>
+    {% for item in data %}
+        <div class="intro">
+            <h3>{{ item.title }}</h3>
+            <p> Author: {{ item.author }}</p>
+            <div class="grid">
+                <a href="#">Read more...</a>
+            </div>
+        </div>
+    {% endfor %}
+
+{% endblock %}

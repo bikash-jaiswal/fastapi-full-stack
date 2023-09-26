@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <link href="{{ url_for('static', path='css/index.css') }}" rel="stylesheet" />
+    <title>{% block title %}Default Title{% endblock %}</title>
+</head>
+<body>
+    <div>
+        <nav class="container-fluid">
+            <ul>
+                <li><strong>A Developer Note's</strong></li>
+            </ul>
+            <ul>
+                <li><a href="{{ url_for('homepage') }}">Home</a></li>
+                <li><a href="{{ url_for('get_blog_posts') }}" >Blog</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <main class="container">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <nav class="container-fluid">
+            <ul>
+                <li><strong>Copyright &copy; {{ year }} </strong></li>
+            </ul>
+        </nav>
+    </footer>
+</body>
+</html>

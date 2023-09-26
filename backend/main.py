@@ -1,23 +1,22 @@
 from fastapi import FastAPI
 
 from backend.routers import blogs
-from .routers import home_route, openai_route, file_handler_route
+from .routers import openai_route, blogs
 import uvicorn
 from fastapi import HTTPException, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException
 
 app = FastAPI()
 
-app.include_router(home_route.router)
 app.include_router(openai_route.router)
-app.include_router(file_handler_route.router)
 app.include_router(blogs.router)
 
-app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
-# Create an instance of Jinja2Templates for template rendering
+# Mount the static files directory
+app.mount("/frontend/", StaticFiles(directory="./frontend/static"), name="static")
+
+# Create an instance of the Jinja2Templates class
 templates = Jinja2Templates(directory="frontend/templates")
 
 

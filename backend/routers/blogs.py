@@ -1,26 +1,43 @@
+import datetime
 from typing import List
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
+from fastapi.templating import Jinja2Templates
 from backend.models.blogs import BlogModel
 from backend.database import blogs_collection, dummy_data
 
+CURRENT_YEAR = datetime.date.today().year
+
 router = APIRouter()
+
+templates = Jinja2Templates(directory="frontend/templates")
+
+
+@router.get("/")
+async def homepage(request: Request):
+    return templates.TemplateResponse(
+        "index.html", {"request": request, "year": CURRENT_YEAR}
+    )
 
 
 @router.get(
     "/blogs", response_description="list of all blogs", response_model=List[BlogModel]
 )
-async def get_post():
+async def get_blog_posts(request: Request):
+    # Specify the fields to include in the projection
+    projection = {"title": 1, "author": 1, "_id": 0}
+
     # Retrieve all blog posts from the MongoDB collection
-    all_posts = list(blogs_collection.find())
+    all_posts = list(blogs_collection.find({}, projection))
 
     # If there are no blog posts, return an empty list
     if not all_posts:
         return []
 
-    # Return the list of blog posts
-    return all_posts
+    return templates.TemplateResponse(
+        "blogs.html", {"request": request, "data": all_posts, "year": CURRENT_YEAR}
+    )
 
 
 @router.post(

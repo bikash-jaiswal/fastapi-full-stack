@@ -1,0 +1,30 @@
+html{
+    padding: 0;
+}
+body {
+    position: relative;
+    min-height: 100vh;
+}
+.intro {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 0;
+    margin: 2rem;
+    padding-bottom: 2rem;
+    
+}
+.intro p {
+    margin-bottom: 0;
+}
+
+.intro h3 {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+footer{
+   position:absolute;
+   bottom: 0;
+}
