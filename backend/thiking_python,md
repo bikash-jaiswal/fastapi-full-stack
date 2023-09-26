@@ -1,0 +1,589 @@
+# Pythonic Thinking
+### Item 3: Know the Differences Between bytes and str
+
+Things to Remember
+✦ bytes contains sequences of 8-bit values, and str contains sequences of Unicode code points.
+✦ Use helper functions to ensure that the inputs you operate on are the type of character sequence that you expect (8-bit values, UTF-8-encoded strings, Unicode code points, etc).
+✦ bytes and str instances can’t be used together with operators (like >, ==, +, and %).
+✦ If you want to read or write binary data to/from a file, always open the file using a binary mode (like 'rb' or 'wb').
+✦ If you want to read or write Unicode data to/from a file, be careful about your system’s default text encoding. Explicitly pass the encoding parameter to open if you want to avoid surprises.
+
+### Item 4: Prefer Interpolated F-Strings Over C-style Format Strings and str.format
+### Item 5: Write Helper Functions Instead of Complex Expressions
+Things to Remember
+
+✦ Python’s syntax makes it easy to write single-line expressions that are overly complicated and difficult to read.
+
+✦ Move complex expressions into helper functions, especially if you need to use the same logic repeatedly. Follow the DRY principle: Don’t repeat yourself.
+
+✦ An if/else expression provides a more readable alternative to using the Boolean operators or and and in expressions.
+
+### Item 6: Prefer Multiple Assignment Unpacking Over Indexing
+```python
+favorite_snacks = {
+    'salty': ('pretzels', 100),
+    'sweet': ('cookies', 180),
+    'veggie': ('carrots', 20),
+}
+((type1, (name1, cals1)),
+ (type2, (name2, cals2)),
+ (type3, (name3, cals3))) = favorite_snacks.items()
+
+print(f'Favorite {type1} is {name1} with {cals1} calories')
+print(f'Favorite {type2} is {name2} with {cals2} calories')
+print(f'Favorite {type3} is {name3} with {cals3} calories')
+
+```
+
+Things to Remember
+
+✦ Python has special syntax called unpacking for assigning multiple values in a single statement.
+
+✦ Unpacking is generalized in Python and can be applied to any iterable, including many levels of iterables within iterables.
+
+✦ Reduce visual noise and increase code clarity by using unpacking to avoid explicitly indexing into sequences.
+
+### Item 7: Prefer enumerate Over range
+```python
+for rank, (name, calories) in enumerate(snacks, 1):
+    print(f'#{rank}: {name} has {calories} calories')
+```
+enumerate yields pairs of the loop index and the next value from the given iterator
+```python
+it = enumerate(flavor_list)
+print(next(it))
+print(next(it))
+
+>>>
+(0, 'vanilla')
+(1, 'chocolate')
+```
+
+Things to Remember
+
+✦ enumerate provides concise syntax for looping over an iterator and getting the index of each item from the iterator as you go.
+
+✦ Prefer enumerate instead of looping over a range and indexing into a sequence.
+
+✦ You can supply a second parameter to enumerate to specify the number from which to begin counting (zero is the default).
+
+### Item 8: Use zip to Process Iterators in Parallel
+
+```
+names = ['Cecilia', 'Lise', 'Marie']
+counts = [len(n) for n in names]
+names.append('Rosalind')
+for name, count in zip(names, counts):
+    print(name)
+
+>>>
+Cecilia
+Lise
+Marie
+```
+zip_longest replaces missing values—the length of the string 'Rosalind' in this case—with whatever fillvalue is passed to it, which defaults to None.
+```python
+import itertools
+for name, count in itertools.zip_longest(names, counts):
+    print(f'{name}: {count}')
+
+>>>
+Cecilia: 7 Lise: 4
+Marie: 5
+Rosalind: None
+```
+
+Things to Remember
+
+✦ The zip built-in function can be used to iterate over multiple iterators in parallel.
+
+✦ zip creates a lazy generator that produces tuples, so it can be used on infinitely long inputs.
+
+✦ zip truncates its output silently to the shortest iterator if you supply it with iterators of different lengths.
+
+✦ Use the zip_longest function from the itertools built-in module if you want to use zip on iterators of unequal lengths without truncation.
+
+### Item 10: Prevent Repetition with Assignment Expressions (walrus operator := )
+```python
+if (count := fresh_fruit.get('apple', 0)) >= 4:
+    make_cider(count)
+else:
+    out_of_stock()
+```
+
+```python
+if (count := fresh_fruit.get('banana', 0)) >= 2:
+    pieces = slice_bananas(count)
+else:
+    pieces = 0
+
+try:
+    smoothies = make_smoothies(pieces)
+except OutOfBananas:
+    out_of_stock()
+```
+Ugly constructs like below are surprisingly common in Python code. Luckily, the walrus operator provides an elegant solution that can feel nearly as versatile as dedicated syntax for switch/case statements:
+```python
+count = fresh_fruit.get('banana', 0)
+if count >= 2:
+    pieces = slice_bananas(count)
+    to_enjoy = make_smoothies(pieces)
+else:
+    count = fresh_fruit.get('apple', 0)
+    if count >= 4:
+        to_enjoy = make_cider(count)
+    else:
+        count = fresh_fruit.get('lemon', 0)
+        if count:
+           to_enjoy = make_lemonade(count)
+        else:
+           to_enjoy‘= 'Nothing'
+```
+
+The version that uses assignment expressions is only five lines shorter than the original, but the improvement in readability is vast due to the reduction in nesting and indentation. If you ever see such ugly constructs emerge in your code, I suggest that you move them over to using the walrus operator if possible.
+
+```python
+if (count := fresh_fruit.get('banana', 0)) >= 2:
+    pieces = slice_bananas(count)
+    to_enjoy = make_smoothies(pieces)
+elif (count := fresh_fruit.get('apple', 0)) >= 4:
+    to_enjoy = make_cider(count)
+elif count := fresh_fruit.get('lemon', 0):
+    to_enjoy = make_lemonade(count)
+else:
+    to_enjoy = 'Nothing'
+```
+
+Things to Remember
+
+✦ Assignment expressions use the walrus operator (:=) to both assign and evaluate variable names in a single expression, thus reducing repetition.
+
+✦ When an assignment expression is a subexpression of a larger expression, it must be surrounded with parentheses.
+
+✦ Although switch/case statements and do/while loops are not available in Python, their functionality can be emulated much more clearly by using assignment expressions.
+
+# Lists and Dictionaries
+Dictionaries provide constant time (amortized) performance for assignments and accesses, which means they are ideal for bookkeeping dynamic information.
+
+### Item 11: Know How to Slice Sequences
+The simplest uses for slicing are the built-in types list, str, and bytes. Slicing can be extended to any Python class that implements the __getitem__ and __setitem__ special methods 
+
+```python
+a = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+a[:]      # ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+a[:5]     # ['a', 'b', 'c', 'd', 'e']
+a[:-1]    # ['a', 'b', 'c', 'd', 'e', 'f', 'g']
+a[4:]     #                     ['e', 'f', 'g', 'h']
+a[-3:]    #                          ['f', 'g', 'h']
+a[2:5]    #           ['c', 'd', 'e']
+a[2:-1]   #           ['c', 'd', 'e', 'f', 'g']
+a[-3:-1]  #                          ['f', 'g']
+```
+
+Things to Remember
+✦ Avoid being verbose when slicing: Don’t supply 0 for the start index or the length of the sequence for the end index.
+✦ Slicing is forgiving of start or end indexes that are out of bounds, which means it’s easy to express slices on the front or back boundaries of a sequence (like a[:20] or a[-20:]).
+✦ Assigning to a list slice replaces that range in the original sequence with what’s referenced even if the lengths are different.
+
+### Item 12: Avoid Striding and Slicing in a Single Expression
+Python has special syntax for the stride of a slice in the form **somelist[start:end:stride]**
+
+```python
+x = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+x[::2]   # ['a', 'c', 'e', 'g']
+x[::-2]  # ['h', 'f', 'd', 'b']
+```
+Here, ::2 means “Select every second item starting at the beginning.” Trickier, ::-2 means “Select every second item starting at the end and moving backward.”
+What do you think 2::2 means? What about -2::-2 vs. -2:2:-2 vs. 2:2:-2?
+```python
+x[2::2]     # ['c', 'e', 'g']
+x[-2::-2]   # ['g', 'e', 'c', 'a']
+x[-2:2:-2]  # ['g', 'e']
+x[2:2:-2]   # []
+```
+
+**If your program can’t afford the time or memory required for two steps, consider using the itertools built-in module’s islice method**
+
+Things to Remember
+✦ Specifying start, end, and stride in a slice can be extremely confusing.
+✦ Prefer using positive stride values in slices without start or end indexes. Avoid negative stride values if possible.
+✦ Avoid using start, end, and stride together in a single slice. If you need all three parameters, consider doing two assignments (one to stride and another to slice) or using islice from the itertools built-in module.
+
+### Item 13: Prefer Catch-All Unpacking Over Slicing
+
+```python
+car_ages = [0, 9, 4, 8, 7, 20, 19, 1, 6, 15]
+car_ages_descending = sorted(car_ages, reverse=True)
+oldest, second_oldest, *others = car_ages_descending
+```
+A starred expression may appear in any position, so you can get the benefits of catch-all unpacking anytime you need to extract one slice:
+
+```python
+oldest, *others, youngest = car_ages_descending
+print(oldest, youngest, others)
+
+*others, second_youngest, youngest = car_ages_descending
+print(youngest, second_youngest, others)
+
+>>>
+20 0 [19, 15, 9, 8, 7, 6, 4, 1]
+0 1 [20, 19, 15, 9, 8, 7, 6, 4]
+```
+
+Python also supports catch-all unpacking through a starred expression. This syntax allows one part of the unpacking assignment to receive all values that didn’t match any other part of the unpacking pattern.
+
+Things to Remember
+✦ Unpacking assignments may use a starred expression to catch all values that weren’t assigned to the other parts of the unpacking pattern into a list.
+✦ Starred expressions may appear in any position, and they will always become a list containing the zero or more values they receive.
+✦ When dividing a list into non-overlapping pieces, catch-all unpacking is much less error prone than slicing and indexing.
+
+### Item 14: Sort by Complex Criteria Using the key Parameter
+```python
+places = ['home', 'work', 'New York', 'Paris']
+places.sort()
+print('Case sensitive: ', places)
+places.sort(key=lambda x: x.lower())
+print('Case insensitive:', places)
+
+>>>
+Case sensitive: ['New York', 'Paris', 'home', 'work']
+Case insensitive: ['home', 'New York', 'Paris', 'work']
+```
+
+Tuples are immutable sequences of arbitrary Python values. Tuples are comparable by default and have a natural ordering, meaning that they implement all of the special methods, such as `` __lt__`` , that are required by the sort method. Tuples implement these special method comparators by iterating over each position in the tuple and comparing the corresponding values one index at a time
+
+```python
+saw = (5, 'circular saw')
+jackhammer = (40, 'jackhammer')
+assert not (jackhammer < saw) # Matches expectations
+
+power_tools.sort(key=lambda x: (x.weight, x.name))
+print(power_tools)
+
+>>>
+[Tool('drill',        4),
+ Tool('sander',       4),
+ Tool('circular saw', 5),
+ Tool('jackhammer',   40)]
+
+```
+Python provides a stable sorting algorithm. The sort method of the list type will preserve the order of the input list when the key function returns values that are equal to each other. This means that I can call sort multiple times on the same list to combine different criteria together.
+
+```python
+power_tools.sort(key=lambda x: x.name) # Name ascending
+power_tools.sort(key=lambda x: x.weight, # Weight descending
+                 reverse=True)
+print(power_tools)
+
+>>>
+[Tool('jackhammer',   40),
+ Tool('circular saw', 5),
+ Tool('drill',        4),
+ Tool('sander',       4)]
+ ```
+
+Things to Remember
+
+✦ The sort method of the list type can be used to rearrange a list’s contents by the natural ordering of built-in types like strings, integers, tuples, and so on.
+✦ The sort method doesn’t work for objects unless they define a natural ordering using special methods, which is uncommon.
+✦ The key parameter of the sort method can be used to supply a helper function that returns the value to use for sorting in place of each item from the list.
+✦ Returning a tuple from the key function allows you to combine multiple sorting criteria together. The unary minus operator can be used to reverse individual sort orders for types that allow it.
+✦ For types that can’t be negated, you can combine many sorting criteria together by calling the sort method multiple times using different key functions and reverse values, in the order of lowest rank sort call to highest rank sort call.
+
+### Item 15: Be Cautious When Relying on dict Insertion Ordering
+Keyword arguments to functions—including the  `` **kwargs`` catch-all parameter;
+
+```python
+def my_func(**kwargs):
+    for key, value in kwargs.items():
+        print('%s = %s' % (key, value))
+
+my_func(goose='gosling', kangaroo='joey')
+
+>>>
+kangaroo = joey
+goose = gosling
+```
+
+For a long time the collections built-in module has had an OrderedDict class that preserves insertion ordering. The performance characteristics of OrderedDict are quite different. If you need to handle a high rate of key insertions and popitem calls (e.g., to implement a least-recently-used cache), OrderedDict may be a better fit than the standard Python dict type
+
+Things to Remember
+✦ Since Python 3.7, you can rely on the fact that iterating a dict instance’s contents will occur in the same order in which the keys were initially added.
+✦ Python makes it easy to define objects that act like dictionaries but that aren’t dict instances. For these types, you can’t assume that insertion ordering will be preserved.
+✦ There are three ways to be careful about dictionary-like classes: Write code that doesn’t rely on insertion ordering, explicitly check for the dict type at runtime, or require dict values using type annotations and static analysis.
+
+### Item 16: Prefer get Over in and KeyError to Handle Missing Dictionary Keys
+
+Another way to accomplish the same behavior is by relying on how dictionaries raise a KeyError exception when you try to get the value for a key that doesn’t exist. This approach is more efficient because it requires only one access and one assignment:
+
+```python
+if (names := votes.get(key)) is None:
+    votes[key] = names = []
+
+names.append(who)
+
+```
+
+This flow of fetching a key that exists or returning a default value is so common that the dict built-in type provides the get method to accomplish this task. The second parameter to get is the default value to return in the case that the key—the first parameter—isn’t present.
+
+Things to Remember
+✦ There are four common ways to detect and handle missing keys in dictionaries: using in expressions, KeyError exceptions, the get method, and the setdefault method.
+✦ The get method is best for dictionaries that contain basic types like counters, and it is preferable along with assignment expressions when creating dictionary values has a high cost or may raise exceptions.
+✦ When the setdefault method of dict seems like the best fit for your problem, you should consider using defaultdict instead.
+
+### Item 17: Prefer defaultdict Over setdefault to Handle Missing Items in Internal State
+
+
+Things to Remember
+✦ If you’re creating a dictionary to manage an arbitrary set of potential keys, then you should prefer using a defaultdict instance from the collections built-in module if it suits your problem.
+✦ If a dictionary of arbitrary keys is passed to you, and you don’t control its creation, then you should prefer the get method to access its items. However, it’s worth considering using the setdefault method for the few situations in which it leads to shorter code.
+
+### Item 18: Know How to Construct Key-Dependent Default Values with ``__missing__``
+You can subclass the dict type and implement the ``__missing__`` special method to add custom logic for handling missing keys.
+```python
+class Pictures(dict):
+    def __missing__(self, key):
+        value = open_picture(key)
+        self[key] = value
+        return value
+
+pictures = Pictures()
+handle = pictures[path]
+handle.seek(0)
+image_data = handle.read()
+```
+
+When the pictures[path] dictionary access finds that the path key isn’t present in the dictionary, the ``__missing__`` method is called. This method must create the new default value for the key, insert it into the dictionary, and return it to the caller. Subsequent accesses of the same path will not call ``__missing__`` since the corresponding item is already present
+
+Things to Remember
+✦ The setdefault method of dict is a bad fit when creating the default value has high computational cost or may raise exceptions.
+✦ The function passed to defaultdict must not require any arguments, which makes it impossible to have the default value depend on the key being accessed.
+✦ You can define your own dict subclass with a __missing__ method in order to construct default values that must know which key was being accessed.
+
+# Functions
+
+### Item 19: Never Unpack More Than Three Variables When Functions Return Multiple Values
+
+Multiple return values can also be received by starred expressions for catch-all unpacking (see Item 13: “Prefer Catch-All Unpacking Over Slicing”).
+
+```python
+longest, *middle, shortest = get_avg_ratio(lengths)
+```
+
+Now, imagine that the program’s requirements change, and I need to also determine the average length, median length, and total population size of the alligators.
+
+Issue here:
+* Using a large number of return values is extremely error prone:
+* he line that calls the function and unpacks the values is long,
+which hurts readability:
+
+```python
+# Correct:
+minimum, maximum, average, median, count = get_stats(lengths)
+
+# Oops! Median and average swapped:
+minimum, maximum, median, average, count = get_stats(lengths)
+```
+
+To avoid these problems, you should never use more than three variables when unpacking the multiple return values from a function. These could be individual values from a three-tuple, two variables and one catch-all starred expression, or anything shorter. 
+
+**Things to Remember**
+✦ You can have functions return multiple values by putting them in a tuple and having the caller take advantage of Python’s unpacking syntax.
+✦ Multiple return values from a function can also be unpacked by catch-all starred expressions.
+✦ Unpacking into four or more variables is error prone and should be avoided; instead, return a small class or namedtuple instance.
+
+### Item 20: Prefer Raising Exceptions to Returning None
+Better way to reduce errors is to never return None for special cases. Instead, raise an Exception up to the caller and have the caller deal with it.
+
+```python
+def careful_divide(a: float, b: float) -> float:
+    """Divides a by b.
+
+    Raises:
+        ValueError: When the inputs cannot be divided.
+    """
+
+    try:
+        return a / b
+    except ZeroDivisionError as e:
+        raise ValueError('Invalid inputs')
+```
+
+The caller no longer requires a condition on the return value of the function. Instead, it can assume that the return value is always valid and use the results immediately in the else block after try
+
+**Things to Remember**
+✦ Functions that return None to indicate special meaning are error prone because None and other values (e.g., zero, the empty string) all evaluate to False in conditional expressions.
+✦ Raise exceptions to indicate special situations instead of returning None. Expect the calling code to handle exceptions properly when they’re documented.
+✦ Type annotations can be used to make it clear that a function will never return the value None, even in special situations.
+
+### Item 22: Reduce Visual Noise with Variable Positional Arguments
+positional arguments can make a function call clearer and reduce visual noise. (These positional arguments are often called varargs for short, or star args, in reference to the conventional name for the parameter *args.)
+
+There are two problems with accepting a variable number of positional arguments.
+* The first issue is that these optional positional arguments are always turned into a tuple before they are passed to a function. This means that if the caller of a function uses the * operator on a generator, it will be iterated until it’s exhausted 
+Functions that accept *args are best for situations where you know the number of inputs in the argument list will be reasonably small. *args is ideal for function calls that pass many literals or variable names together. It’s primarily for the convenience of the programmer and the readability of the code.
+* The second issue with *args is that you can’t add new positional arguments to a function in the future without migrating every caller. If you try to add a positional argument in the front of the argument list, existing callers will subtly break if they aren’t updated:
+
+Things to Remember
+✦ Functions can accept a variable number of positional arguments by using *args in the def statement.
+✦ You can use the items from a sequence as the positional arguments for a function with the * operator.
+✦ Using the * operator with a generator may cause a program to run out of memory and crash.
+✦ Adding new positional parameters to functions that accept *args can introduce hard-to-detect bugs.
+
+
+### Item 23: Provide Optional Behavior with Keyword Arguments
+
+```python
+def remainder(number, divisor):
+    return number % divisor
+
+assert remainder(20, 7) == 6
+
+my_kwargs = {
+    'number': 20,
+    'divisor': 7,
+}
+assert remainder(**my_kwargs) == 6
+
+or
+
+my_kwargs = {
+    'divisor': 7,
+}
+assert remainder(number=20, **my_kwargs) == 6
+```
+You can mix the ** operator with positional arguments or keyword arguments in the function call, as long as no argument is repeated:
+
+
+And if you’d like for a function to receive any named keyword argument, you can use the **kwargs catch-all parameter to collect those arguments into a dict that you can then process
+
+```python
+def print_parameters(**kwargs):
+    for key, value in kwargs.items():
+        print(f'{key} = {value}')
+
+print_parameters(alpha=1.5, beta=9, gamma=4)
+
+>>>
+alpha = 1.5
+beta = 9
+gamma = 4
+```
+
+Things to Remember
+✦ Function arguments can be specified by position or by keyword.
+✦ Keywords make it clear what the purpose of each argument is when it would be confusing with only positional arguments.
+✦ Keyword arguments with default values make it easy to add new behaviors to a function without needing to migrate all existing callers.
+✦ Optional keyword arguments should always be passed by keyword instead of by position.
+
+### Item 24: Use None and Docstrings to Specify Dynamic Default Arguments
+Things to Remember
+✦ A default argument value is evaluated only once: during function definition at module load time. This can cause odd behaviors for dynamic values (like {}, [], or datetime.now()).
+✦ Use None as the default value for any keyword argument that has a dynamic value. Document the actual default behavior in the function’s docstring.
+✦ Using None to represent keyword argument default values also works correctly with type annotations.
+
+```python
+from time import sleep
+from datetime import datetime
+
+def log(message, when=datetime.now()):
+    print(f'{when}: {message}')
+
+log('Hi there!')
+sleep(0.1)
+log('Hello again!')
+
+>>>
+2019-07-06 14:06:15.120124: Hi there!
+2019-07-06 14:06:15.120124: Hello again!
+```
+
+This doesn’t work as expected. The timestamps are the same because datetime.now is executed only a single time: when the function is defined. A default argument value is evaluated only once per module load, which usually happens when a program starts up. After the module containing this code is loaded, the datetime.now() default argument will never be evaluated again.
+
+**The convention for achieving the desired result in Python is to provide a default value of None and to document the actual behavior in the docstring **
+
+```python
+def log(message, when=None):
+    """Log a message with a timestamp.
+
+    Args:
+        message: Message to print.
+        when: datetime of when the message occurred.
+            Defaults to the present time.
+    """
+    if when is None:
+        when = datetime.now()
+    print(f'{when}: {message}')
+
+log('Hi there!')
+sleep(0.1)
+log('Hello again!')
+
+# Now the timestamps will be different:
+
+>>>
+2019-07-06 14:06:15.222419: Hi there!
+2019-07-06 14:06:15.322555: Hello again!
+```
+
+```python
+import json
+
+def decode(data, default={}):
+    try:
+        return json.loads(data)
+    except ValueError:
+        return default
+
+The problem here is the same as in the datetime.now example above. The dictionary specified for default will be shared by all calls to decode because default argument values are evaluated only once (at module load time). This can cause extremely surprising behavior:
+
+foo = decode('bad data')
+foo['stuff'] = 5
+bar = decode('also bad')
+bar['meep'] = 1
+print('Foo:', foo)
+print('Bar:', bar)
+
+>>>
+Foo: {'stuff': 5, 'meep': 1}
+Bar: {'stuff': 5, 'meep': 1}
+```
+
+**The fix is to set the keyword argument default value to None and then document the behavior in the function’s docstring:**
+```python
+def decode(data, default=None):
+    """Load JSON data from a string.
+
+    Args:
+         data: JSON data to decode.
+         default: Value to return if decoding fails.
+             Defaults to an empty dictionary.
+    """
+    try:
+         return json.loads(data)
+    except ValueError:
+         if default is None:
+             default = {}
+    return default
+
+foo = decode('bad data')
+foo['stuff'] = 5
+bar = decode('also bad')
+bar['meep'] = 1
+print('Foo:', foo)
+print('Bar:', bar)
+assert foo is not bar
+
+>>>
+Foo: {'stuff': 5}
+Bar: {'meep': 1}
+```
+
+### Item 25: Enforce Clarity with Keyword-Only and Positional-Only Arguments
+✦ Keyword-only arguments force callers to supply certain arguments by keyword (instead of by position), which makes the intention of a function call clearer. Keyword-only arguments are defined after a single * in the argument list.
+
+✦ Positional-only arguments ensure that callers can’t supply certain parameters using keywords, which helps reduce coupling. Positional-only arguments are defined before a single / in the argument list.
+
+✦ Parameters between the / and * characters in the argument list may be supplied by position or keyword, which is the default for Python parameters.
+
+### Item 26: Define Function Decorators with `functools.wraps`
